@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 
 const allowedOrigins = [
   "http://localhost:4200",
-  "https://tourney-frontend.vercel.app",
-  "https://tourney-frontend-5syszknto-johnbooce963s-projects.vercel.app"
+  "https://tourney-frontend.vercel.app"
 ];
 
 export function withCors(req: Request, body: any,res: ResponseInit = {}) {
