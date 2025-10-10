@@ -1,7 +1,6 @@
 import Image from "next/image";
-import { startWebSocketServer } from "./api/socket/ws-routes";
 
-startWebSocketServer(8080);
+"use server"
 
 export default function Home() {
   return (
