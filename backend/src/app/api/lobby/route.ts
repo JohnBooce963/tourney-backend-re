@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     const id = lobbyService.createLobby(lobbyName, lobbyTheme);
     const lobby = lobbyService.getLobbyInfo(id);
 
-    publishLobbies(lobbyService.getAllLobbies())
+    // publishLobbies(lobbyService.getAllLobbies())
 
     return withCors(req, lobby, { status: 200 });
   } catch (err) {

@@ -12,8 +12,8 @@ export function withCors(req: Request, body: any,res: ResponseInit = {}) {
   if (allowedOrigins.includes(origin)) {
     headers.set("Access-Control-Allow-Origin", origin);
   }
-  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "content-type");
+  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT");
+  headers.set("Access-Control-Allow-Headers", "*");
 
   return new NextResponse(JSON.stringify(body), { ...res, headers });
 }
@@ -25,8 +25,8 @@ export function corsOptionsResponse(req: Request) {
   if (allowedOrigins.includes(origin)) {
     headers.set("Access-Control-Allow-Origin", origin);
   }
-  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "content-type");
+  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT");
+  headers.set("Access-Control-Allow-Headers", "*");
 
   return new NextResponse(null, { status: 204, headers });
 }

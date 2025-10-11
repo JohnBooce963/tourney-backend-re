@@ -1,7 +1,7 @@
 import Ably from "ably";
 import { withCors, corsOptionsResponse } from "@/libs/cor";
 
-const rest = new Ably.Rest("4PXB0g.UG7TyQ:plqdic7_UvXxQm_-wZ8RXV9XRDLRZOmIJjKoaGTzwYk");
+const rest = new Ably.Rest("4PXB0g.W0QHPw:XfNx7O8M7NKk_ey2jj_CS3ZIhWbg1-s5e8hnF-rnLkQ");
 
 // Handle preflight
 export async function OPTIONS(req: Request) {
