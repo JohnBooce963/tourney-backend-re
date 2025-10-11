@@ -18,9 +18,9 @@ const allowedOrigins = [
 function broadcast(payload: any, lobbyId?: string) {
   const msg = `data: ${JSON.stringify(payload)}\n\n`;
   clients.forEach((client) => {
-    // if (!lobbyId || client.lobbyId === lobbyId) {
-      
-    // }
+    if (!lobbyId || client.lobbyId === lobbyId) {
+      client.send(msg);
+    }
     client.send(msg);
   });
 }
