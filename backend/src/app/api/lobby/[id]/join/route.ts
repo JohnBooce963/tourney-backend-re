@@ -2,9 +2,8 @@ import { lobbyService } from "@/service/lobby-service";
 import { withCors, corsOptionsResponse } from "@/libs/cor";
 
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
-    try {
-        const { id } = await context.params;
-         
+    const { id } = await context.params;
+    try {   
         const { playerName, slot } = await req.json();
 
     if (!id) {
