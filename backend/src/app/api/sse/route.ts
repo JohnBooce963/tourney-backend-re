@@ -5,6 +5,7 @@ import { lobbyService } from "@/service/lobby-service";
 type Client = {
   id: string;
   send: (msg: string) => void;
+  lobbyId?: string;
 };
 
 const clients: Map<string, Client> = new Map();
@@ -14,18 +15,32 @@ const allowedOrigins = [
   "https://tourney-frontend.vercel.app"
 ];
 
-function broadcast(payload: any) {
+function broadcast(payload: any, lobbyId?: string) {
   const msg = `data: ${JSON.stringify(payload)}\n\n`;
-  clients.forEach((client) => client.send(msg));
+  clients.forEach((client) => {
+    if (!lobbyId || client.lobbyId === lobbyId) {
+      client.send(msg);
+    }
+  });
 }
 
 // Subscribe to lobbyService events
-lobbyService.on("lobbyUpdate", (lobbies) => broadcast({ type: "lobbies", data: lobbies }));
-lobbyService.on("gameUpdate", (update) => broadcast({ type: "status", data: update }));
-lobbyService.on("lobbyDeleted", ({ lobbyId }) => broadcast({ type: "lobbyDeleted", data: { lobbyId } }));
+lobbyService.on("lobbiesUpdate", (lobbies) =>
+  broadcast({ type: "lobbies", data: lobbies })
+);
+
+lobbyService.on("lobbyUpdate", ({ lobbyId, lobby, type }) =>
+  broadcast({ type: type || "lobbyUpdate", data: lobby }, lobbyId)
+);
+
+lobbyService.on("gameUpdate", (update) =>
+  broadcast({ type: "gameUpdate", data: update })
+);
 
 export async function GET(req: NextRequest) {
   const origin = req.headers.get("origin") ?? "";
+  const { searchParams } = new URL(req.url);
+  const lobbyId = searchParams.get("lobbyId") ?? undefined;
   const headers = new Headers({});
 
   if(allowedOrigins.includes(origin)){
@@ -39,10 +54,22 @@ export async function GET(req: NextRequest) {
     start(controller) {
       const clientId = crypto.randomUUID();
       const send = (msg: string) => controller.enqueue(msg);
-      clients.set(clientId, { id: clientId, send });
+      clients.set(clientId, { id: clientId, send, lobbyId });
 
       // Send initial lobbies
-      controller.enqueue(`data: ${JSON.stringify({ type: "lobbies", data: lobbyService.getAllLobbies() })}\n\n`);
+      if (lobbyId) {
+        const lobby = lobbyService.getLobbyInfo(lobbyId);
+        controller.enqueue(
+          `data: ${JSON.stringify({ type: "lobbyUpdate", data: lobby })}\n\n`
+        );
+      } else {
+        controller.enqueue(
+          `data: ${JSON.stringify({
+            type: "lobbies",
+            data: lobbyService.getAllLobbies(),
+          })}\n\n`
+        );
+      }
 
       // Remove client on disconnect
       req.signal.addEventListener("abort", () => {

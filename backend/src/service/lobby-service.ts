@@ -19,7 +19,7 @@ export const lobbyService = new (class extends EventEmitter {
     game.on("end", (lobbyId) => this.deleteLobby(lobbyId, ownerToken));
     this.gameServices.set(id, game);
 
-    this.emit("lobbyUpdate", this.getAllLobbies());
+    this.emit("lobbiesUpdate", this.getAllLobbies());
     return id;
   }
 
@@ -28,7 +28,7 @@ export const lobbyService = new (class extends EventEmitter {
     if (!lobby) throw new Error("Lobby not found");
     if (lobby.players[slot] !== null) throw new Error("Slot taken");
     lobby.players[slot] = playerName;
-    this.emit("lobbyUpdate", this.getAllLobbies());
+    this.emit("lobbyUpdate", { type: "join", lobbyId, lobby: this.getLobbyInfo(lobbyId) });
     return lobby;
   }
 
@@ -54,7 +54,7 @@ export const lobbyService = new (class extends EventEmitter {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
     lobby.players[slot] = null;
-    this.emit("lobbyUpdate", this.getAllLobbies());
+    this.emit("lobbyUpdate", { type: "cancel", lobbyId, lobby: this.getLobbyInfo(lobbyId) });
     return lobby;
   }
 
@@ -64,7 +64,7 @@ export const lobbyService = new (class extends EventEmitter {
     for (const slot of [1, 2]) {
       if (lobby.players[slot] === playerName) lobby.players[slot] = null;
     }
-    this.emit("lobbyUpdate", this.getAllLobbies());
+    this.emit("lobbyUpdate", { type: "leave", lobbyId, lobby: this.getLobbyInfo(lobbyId) });
     return lobby;
   }
 
@@ -80,7 +80,7 @@ export const lobbyService = new (class extends EventEmitter {
     if (!lobby || lobby.ownerToken !== token) return false;
     this.lobbies.delete(lobbyId);
     this.gameServices.delete(lobbyId);
-    this.emit("lobbyUpdate", this.getAllLobbies());
+    this.emit("lobbiesUpdate", this.getAllLobbies());
     return true;
   }
 })();
