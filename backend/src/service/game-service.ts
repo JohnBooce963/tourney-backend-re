@@ -116,11 +116,11 @@ private lobbyId: string;
     this.nextTurn();
   }
 
-  private onGameEnd?: () => void;
+  // private onGameEnd?: () => void;
 
-  setOnGameEnd(callback: () => void) {
-    this.onGameEnd = callback;
-  }
+  // setOnGameEnd(callback: () => void) {
+  //   this.onGameEnd = callback;
+  // }
 
   nextTurn() {
     this.stepIndex++;
@@ -139,11 +139,14 @@ private lobbyId: string;
   }
 
   tick() {
-    if (this.secondsLeft > 0) {
-      this.secondsLeft--;
-      if (this.secondsLeft === 0) this.randomSquadOrOperator();
-      this.emitUpdate("status", this.getStatus());
-    }
+    // if (this.secondsLeft > 0) {
+    //   this.secondsLeft--;
+    //   if (this.secondsLeft === 0) {
+
+    //   };
+    //   this.emitUpdate("status", this.getStatus());
+    // }
+    this.emitUpdate("status", this.getStatus());
   }
 
   randomSquadOrOperator() {

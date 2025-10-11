@@ -17,7 +17,7 @@ export const lobbyService = new (class extends EventEmitter {
 
     const game = new GameService(id, theme);
     game.on("update", (state) => this.emit("gameUpdate", state));
-    // game.on("end", (lobbyId) => this.deleteLobby(lobbyId, ownerToken));
+    game.on("end", (lobbyId) => this.deleteLobby(lobbyId, ownerToken));
     this.gameServices.set(id, game);
 
     publishLobbies(this.getAllLobbies());
