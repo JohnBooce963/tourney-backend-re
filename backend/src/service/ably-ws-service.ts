@@ -1,6 +1,6 @@
 import Ably from "ably";
 
-const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY! });;
+const ably = new Ably.Rest("4PXB0g.W0QHPw:XfNx7O8M7NKk_ey2jj_CS3ZIhWbg1-s5e8hnF-rnLkQ");
 
 export const publishLobbies = (data: any) => {
   ably.channels.get("lobbies").publish("lobbies", data);
