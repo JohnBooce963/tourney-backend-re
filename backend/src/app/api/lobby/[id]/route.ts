@@ -2,8 +2,8 @@ import { lobbyService } from "@/service/lobby-service";
 import { withCors, corsOptionsResponse } from "@/libs/cor";
 
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function GET(req: Request,  context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
 
     try{
         const res = lobbyService.getLobbyInfo(id);
