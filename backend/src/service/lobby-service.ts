@@ -32,7 +32,7 @@ export const lobbyService = new (class extends EventEmitter {
 
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
-    publishLobbies(this.getAllLobbies());
+    // publishLobbies(this.getAllLobbies());
 
     return lobby;
   }
@@ -73,7 +73,7 @@ export const lobbyService = new (class extends EventEmitter {
     }
     
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
-    publishLobbies(this.getAllLobbies());
+    // publishLobbies(this.getAllLobbies());
 
     return lobby;
   }
