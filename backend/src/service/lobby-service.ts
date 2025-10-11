@@ -10,7 +10,7 @@ export const lobbyService = new (class extends EventEmitter {
   createLobby(name: string, theme: number) {
     const id = crypto.randomUUID();
     const ownerToken = crypto.randomUUID();
-    const players = { 1: null, 2: null };
+    const players = { 0: null, 1: null };
 
     const meta: LobbyMeta = { id, name, theme, players, ownerToken };
     this.lobbies.set(id, meta);
@@ -27,8 +27,8 @@ export const lobbyService = new (class extends EventEmitter {
   joinLobby(lobbyId: string, playerName: string, slot: number) {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
-    if (lobby.players[slot] !== null) throw new Error("Slot taken");
-    lobby.players[slot] = playerName;
+    if (lobby.players[slot - 1] !== null) throw new Error("Slot taken");
+    lobby.players[slot - 1] = playerName;
 
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
