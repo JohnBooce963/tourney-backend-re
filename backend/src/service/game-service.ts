@@ -9,7 +9,7 @@ private lobbyId: string;
 
   private currentPlayer = "";
   private phase = "";
-  private secondsLeft = 30;
+  private secondsLeft = 180;
   private TURN_SECONDS = 90;
 
   private bannedOperator: string[] = ["", "", "", "", "", "", ""];
