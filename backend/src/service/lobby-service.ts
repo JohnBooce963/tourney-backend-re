@@ -27,8 +27,8 @@ export const lobbyService = new (class extends EventEmitter {
   joinLobby(lobbyId: string, playerName: string, slot: number) {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
-    if (lobby.players[slot - 1] !== null) throw new Error("Slot taken");
-    lobby.players[slot - 1] = playerName;
+    if (lobby.players[slot] !== null) throw new Error("Slot taken");
+    lobby.players[slot] = playerName;
 
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
