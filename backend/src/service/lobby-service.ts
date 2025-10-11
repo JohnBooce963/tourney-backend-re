@@ -30,7 +30,7 @@ export const lobbyService = new (class extends EventEmitter {
     if (lobby.players[slot] !== null) throw new Error("Slot taken");
     lobby.players[slot] = playerName;
 
-    publishLobbyUpdate(lobbyId, { type: "join", lobby: this.getLobbyInfo(lobbyId) });
+    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
     publishLobbies(this.getAllLobbies());
 
@@ -60,7 +60,7 @@ export const lobbyService = new (class extends EventEmitter {
     if (!lobby) throw new Error("Lobby not found");
     lobby.players[slot] = null;
     
-    publishLobbyUpdate(lobbyId, { type: "cancel", lobby: this.getLobbyInfo(lobbyId) });
+    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
     return lobby;
   }
@@ -72,7 +72,7 @@ export const lobbyService = new (class extends EventEmitter {
       if (lobby.players[slot] === playerName) lobby.players[slot] = null;
     }
     
-    publishLobbyUpdate(lobbyId, { type: "leave", lobby: this.getLobbyInfo(lobbyId) });
+    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
     publishLobbies(this.getAllLobbies());
 
     return lobby;
@@ -92,7 +92,7 @@ export const lobbyService = new (class extends EventEmitter {
     this.gameServices.delete(lobbyId);
 
     publishLobbies(this.getAllLobbies());
-    publishLobbyUpdate(lobbyId, { type: "deleted" });
+    // publishLobbyUpdate(lobbyId, "deleted");
 
     return true;
   }
