@@ -55,7 +55,7 @@ export const lobbyService = new (class extends EventEmitter {
     game.startDraft();
   }
 
-  cancelRole(lobbyId: string, slot: 1 | 2) {
+  cancelRole(lobbyId: string, slot: number) {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
     lobby.players[slot] = null;
