@@ -1,6 +1,7 @@
 import EventEmitter from "events";
 import { GameService } from "./game-service";
 import { LobbyMeta } from "@/model/lobbyMeta";
+import { publishLobbies, publishLobbyUpdate } from "@/service/ably-ws-service";
 
 export const lobbyService = new (class extends EventEmitter {
   private lobbies: Map<string, LobbyMeta> = new Map();
@@ -19,7 +20,7 @@ export const lobbyService = new (class extends EventEmitter {
     game.on("end", (lobbyId) => this.deleteLobby(lobbyId, ownerToken));
     this.gameServices.set(id, game);
 
-    this.emit("lobbiesUpdate", this.getAllLobbies());
+    publishLobbies(this.getAllLobbies());
     return id;
   }
 
@@ -28,7 +29,11 @@ export const lobbyService = new (class extends EventEmitter {
     if (!lobby) throw new Error("Lobby not found");
     if (lobby.players[slot] !== null) throw new Error("Slot taken");
     lobby.players[slot] = playerName;
-    this.emit("lobbyUpdate", { type: "join", lobbyId, lobby: this.getLobbyInfo(lobbyId) });
+
+    publishLobbyUpdate(lobbyId, { type: "join", lobby: this.getLobbyInfo(lobbyId) });
+
+    publishLobbies(this.getAllLobbies());
+
     return lobby;
   }
 
@@ -54,7 +59,9 @@ export const lobbyService = new (class extends EventEmitter {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
     lobby.players[slot] = null;
-    this.emit("lobbyUpdate", { type: "cancel", lobbyId, lobby: this.getLobbyInfo(lobbyId) });
+    
+    publishLobbyUpdate(lobbyId, { type: "cancel", lobby: this.getLobbyInfo(lobbyId) });
+
     return lobby;
   }
 
@@ -64,7 +71,10 @@ export const lobbyService = new (class extends EventEmitter {
     for (const slot of [1, 2]) {
       if (lobby.players[slot] === playerName) lobby.players[slot] = null;
     }
-    this.emit("lobbyUpdate", { type: "leave", lobbyId, lobby: this.getLobbyInfo(lobbyId) });
+    
+    publishLobbyUpdate(lobbyId, { type: "leave", lobby: this.getLobbyInfo(lobbyId) });
+    publishLobbies(this.getAllLobbies());
+
     return lobby;
   }
 
@@ -80,7 +90,10 @@ export const lobbyService = new (class extends EventEmitter {
     if (!lobby || lobby.ownerToken !== token) return false;
     this.lobbies.delete(lobbyId);
     this.gameServices.delete(lobbyId);
-    this.emit("lobbiesUpdate", this.getAllLobbies());
+
+    publishLobbies(this.getAllLobbies());
+    publishLobbyUpdate(lobbyId, { type: "deleted" });
+
     return true;
   }
 })();
