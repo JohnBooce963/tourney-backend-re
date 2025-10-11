@@ -62,12 +62,6 @@ export async function GET(req: NextRequest) {
         controller.enqueue(
           `data: ${JSON.stringify({ type: "lobbyUpdate", data: lobby })}\n\n`
         );
-        controller.enqueue(
-          `data: ${JSON.stringify({ type: "cancel", data: lobby })}\n\n`
-        );
-        controller.enqueue(
-          `data: ${JSON.stringify({ type: "join", data: lobby })}\n\n`
-        );
       } else {
         controller.enqueue(
           `data: ${JSON.stringify({
