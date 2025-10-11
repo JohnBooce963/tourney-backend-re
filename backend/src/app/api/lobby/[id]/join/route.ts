@@ -11,11 +11,12 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
       return withCors(req, { error: "Lobby Not Found" }, { status: 404 });
     }
 
-    if(slot != 1 && slot != 2){
-        return withCors(req, { error: "Invalid Slots"}, { status: 400})
+    const slotNum = parseInt(slot, 10) as 1 | 2;
+    if (![1, 2].includes(slotNum)) {
+      return withCors(req, { error: "Invalid slot" }, { status: 400 });
     }
 
-    const lobby = lobbyService.joinLobby(id, playerName, slot);
+    const lobby = lobbyService.joinLobby(id, playerName, slotNum);
     // const lobby = lobbyService.getLobbyInfo(id);
 
     return withCors(req, lobby, { status: 200 });
