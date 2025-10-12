@@ -72,7 +72,7 @@ export const lobbyService = new (class extends EventEmitter {
   leaveLobby(lobbyId: string, playerName: string) {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
-    for (const slot of [1, 2]) {
+    for (const slot of [0, 1]) {
       if (lobby.players[slot] === playerName) lobby.players[slot] = null;
     }
     
@@ -96,7 +96,7 @@ export const lobbyService = new (class extends EventEmitter {
     this.gameServices.delete(lobbyId);
 
     publishLobbies(this.getAllLobbies());
-    // publishLobbyUpdate(lobbyId, "deleted");
+    publishLobbyUpdate(lobbyId, { deleted: true });
 
     return true;
   }
