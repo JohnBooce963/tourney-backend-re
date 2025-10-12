@@ -96,7 +96,7 @@ export const lobbyService = new (class extends EventEmitter {
     this.gameServices.delete(lobbyId);
 
     publishLobbies(this.getAllLobbies());
-    // publishLobbyUpdate(lobbyId, { deleted: true });
+    publishLobbyUpdate(lobbyId, { type: 'deleted' });
 
     return true;
   }
