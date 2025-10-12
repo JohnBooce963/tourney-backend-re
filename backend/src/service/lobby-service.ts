@@ -20,7 +20,7 @@ export const lobbyService = new (class extends EventEmitter {
     game.on("end", (lobbyId) => this.deleteLobby(lobbyId, ownerToken));
     this.gameServices.set(id, game);
 
-    publishLobbies(this.getAllLobbies());
+
     return id;
   }
 

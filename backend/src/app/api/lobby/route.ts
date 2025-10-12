@@ -21,11 +21,11 @@ export async function POST(req: Request) {
     }
 
     const id = lobbyService.createLobby(lobbyName, lobbyTheme);
-    const lobby = lobbyService.getLobbyInfo(id);
+    // const lobby = lobbyService.getLobbyInfo(id);
 
-    // publishLobbies(lobbyService.getAllLobbies())
+    publishLobbies(lobbyService.getAllLobbies())
 
-    return withCors(req, lobby, { status: 200 });
+    return withCors(req, id, { status: 200 });
   } catch (err) {
     return withCors(req, { error: "Internal Server Error" }, { status: 500 });
   }

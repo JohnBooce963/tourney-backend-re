@@ -1,5 +1,6 @@
 import { lobbyService } from "@/service/lobby-service";
 import { withCors, corsOptionsResponse } from "@/libs/cor";
+import { publishLobbies } from "@/service/ably-ws-service";
 
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
     try {
@@ -17,6 +18,8 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
 
     const deleted = lobbyService.deleteLobby(id, ownerToken);
     // const lobby = lobbyService.getLobbyInfo(id);
+
+    publishLobbies(lobbyService.getAllLobbies())
 
     return withCors(req, deleted, { status: 200 });
   } catch (err) {
