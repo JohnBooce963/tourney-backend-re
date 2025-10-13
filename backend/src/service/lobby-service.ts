@@ -91,13 +91,13 @@ export const lobbyService = new (class extends EventEmitter {
 
   deleteLobby(lobbyId: string, token: string) {
     const lobby = this.lobbies.get(lobbyId);
-    if (!lobby || lobby.ownerToken !== token) return false;
+    if (!lobby || lobby.ownerToken !== token) throw new Error("Lobby not found");
     this.lobbies.delete(lobbyId);
     this.gameServices.delete(lobbyId);
 
     publishLobbies(this.getAllLobbies());
-    publishLobbyDelete(lobbyId);
+    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
-    return true;
+    return lobby;
   }
 })();
