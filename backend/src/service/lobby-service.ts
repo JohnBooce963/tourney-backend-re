@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import { GameService } from "./game-service";
 import { LobbyMeta } from "@/model/lobbyMeta";
-import { publishLobbies, publishLobbyUpdate } from "@/service/ably-ws-service";
+import { publishLobbies, publishLobbyDelete, publishLobbyUpdate } from "@/service/ably-ws-service";
 
 export const lobbyService = new (class extends EventEmitter {
   private lobbies: Map<string, LobbyMeta> = new Map();
@@ -96,7 +96,7 @@ export const lobbyService = new (class extends EventEmitter {
     this.gameServices.delete(lobbyId);
 
     publishLobbies(this.getAllLobbies());
-    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
+    publishLobbyDelete(lobbyId);
 
     return true;
   }
