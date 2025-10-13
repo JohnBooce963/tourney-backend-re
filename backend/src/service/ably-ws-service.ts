@@ -10,6 +10,6 @@ export const publishLobbyUpdate = async (lobbyId: string, data: any) => {
   await ably.channels.get(`lobby-${lobbyId}`).publish("lobbyUpdate", data);
 };
 
-export const publishLobbyDelete = async (lobbyId: string) => {
-  await ably.channels.get(`lobbyDelete`).publish("lobbyDelete", lobbyId);
-};
+export const publishCoinFlip = async (lobbyId: string, data: any) => {
+  await ably.channels.get(`lobby-${lobbyId}`).publish("coinFlip", data);
+}

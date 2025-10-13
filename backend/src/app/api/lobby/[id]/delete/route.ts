@@ -3,10 +3,9 @@ import { withCors, corsOptionsResponse } from "@/libs/cor";
 import { publishLobbies } from "@/service/ably-ws-service";
 
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
-    try {
-        const { id } = await context.params;
-         
-        const { ownerToken } = await req.json();
+    const { id } = await context.params;
+    try {  
+      const { ownerToken } = await req.json();
 
     if (!id) {
       return withCors(req, { error: "Lobby Not Found" }, { status: 404 });

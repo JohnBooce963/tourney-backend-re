@@ -2,6 +2,7 @@ import { lobbyService } from "@/service/lobby-service";
 import { withCors, corsOptionsResponse } from "@/libs/cor";
 import { publishLobbies } from "@/service/ably-ws-service";
 
+
 export async function GET(req: Request) {
   try {
     const lobbies = lobbyService.getAllLobbies();
@@ -22,8 +23,6 @@ export async function POST(req: Request) {
 
     const id = lobbyService.createLobby(lobbyName, lobbyTheme);
     const lobby = lobbyService.getLobbyInfo(id);
-
-    publishLobbies(lobbyService.getAllLobbies())
 
     return withCors(req, lobby, { status: 200 });
   } catch (err) {

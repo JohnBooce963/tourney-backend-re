@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import { GameService } from "./game-service";
 import { LobbyMeta } from "@/model/lobbyMeta";
-import { publishLobbies, publishLobbyDelete, publishLobbyUpdate } from "@/service/ably-ws-service";
+import { publishCoinFlip, publishLobbies, publishLobbyUpdate } from "@/service/ably-ws-service";
 
 export const lobbyService = new (class extends EventEmitter {
   private lobbies: Map<string, LobbyMeta> = new Map();
@@ -21,7 +21,7 @@ export const lobbyService = new (class extends EventEmitter {
     this.gameServices.set(id, game);
 
     
-    publishLobbyUpdate(id, this.getLobbyInfo(id));
+    // publishLobbyUpdate(id, this.getLobbyInfo(id));
 
     publishLobbies(this.getAllLobbies());
 
@@ -36,7 +36,7 @@ export const lobbyService = new (class extends EventEmitter {
 
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
-    publishLobbies(this.getAllLobbies());
+    // publishLobbies(this.getAllLobbies());
 
     return lobby;
   }
@@ -65,6 +65,7 @@ export const lobbyService = new (class extends EventEmitter {
     lobby.players[slot] = null;
     
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
+    // publishLobbies(this.getAllLobbies());
 
     return lobby;
   }
@@ -77,7 +78,7 @@ export const lobbyService = new (class extends EventEmitter {
     }
     
     publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
-    publishLobbies(this.getAllLobbies());
+    // publishLobbies(this.getAllLobbies());
 
     return lobby;
   }
@@ -95,8 +96,8 @@ export const lobbyService = new (class extends EventEmitter {
     this.lobbies.delete(lobbyId);
     this.gameServices.delete(lobbyId);
 
-    publishLobbies(this.getAllLobbies());
-    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
+    // publishLobbies(this.getAllLobbies());
+    publishLobbyUpdate(lobbyId, null);
 
     return lobby;
   }
