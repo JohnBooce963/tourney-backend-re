@@ -1,40 +1,40 @@
-import EventEmitter from "events";
 import { GameService } from "./game-service";
 import { LobbyMeta } from "@/model/lobbyMeta";
-import { publishCoinFlip, publishLobbies, publishLobbyUpdate } from "@/service/ably-ws-service";
+import { publishLobbies, publishLobbyUpdate, publishStartGame } from "@/service/ably-ws-service";
 
-export const lobbyService = new (class extends EventEmitter {
+class LobbyService {
   private lobbies: Map<string, LobbyMeta> = new Map();
   private gameServices: Map<string, GameService> = new Map();
 
-  createLobby(name: string, theme: number) {
+  async createLobby(name: string, theme: number) {
     const id = crypto.randomUUID();
     const ownerToken = crypto.randomUUID();
     const players = { 0: null, 1: null };
 
     const meta: LobbyMeta = { id, name, theme, players, ownerToken };
     this.lobbies.set(id, meta);
-
-    const game = new GameService(id, theme);
-    game.on("update", (state) => this.emit("gameUpdate", state));
-    game.on("end", (lobbyId) => this.deleteLobby(lobbyId, ownerToken));
+    
+    const game = new GameService(id, meta.theme);
     this.gameServices.set(id, game);
+    // game.on("update", (state) => this.emit("gameUpdate", state));
+
+
 
     
     // publishLobbyUpdate(id, this.getLobbyInfo(id));
 
-    publishLobbies(this.getAllLobbies());
+    await publishLobbies(this.getAllLobbies());
 
     return id;
   }
 
-  joinLobby(lobbyId: string, playerName: string, slot: number) {
+  async joinLobby(lobbyId: string, playerName: string, slot: number) {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby) throw new Error("Lobby not found");
     if (lobby.players[slot] !== null) throw new Error("Slot taken");
     lobby.players[slot] = playerName;
 
-    publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
+    await publishLobbyUpdate(lobbyId, this.getLobbyInfo(lobbyId));
 
     // publishLobbies(this.getAllLobbies());
 
@@ -42,7 +42,7 @@ export const lobbyService = new (class extends EventEmitter {
   }
 
   getLobbyInfo(lobbyId: string) {
-    return this.lobbies.get(lobbyId) ?? null;
+    return this.lobbies.get(lobbyId);
   }
 
   getAllLobbies() {
@@ -56,6 +56,7 @@ export const lobbyService = new (class extends EventEmitter {
   startGame(lobbyId: string) {
     const game = this.getGameService(lobbyId);
     if (!game) throw new Error("Game not found");
+    publishStartGame(lobbyId);
     game.startDraft();
   }
 
@@ -101,4 +102,6 @@ export const lobbyService = new (class extends EventEmitter {
 
     return lobby;
   }
-})();
+};
+
+export const lobbyService = new LobbyService();
