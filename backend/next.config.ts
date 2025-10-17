@@ -1,15 +1,17 @@
 import type { NextConfig } from "next";
+const fs = require('fs');
+
+
+const dotenv = require('dotenv');
+
+const env = dotenv.parse(fs.readFileSync('.env'));
 
 
 
 const nextConfig: NextConfig = {
   /* config options here */
   // reactStrictMode: true,
-    env: {
-      ABLY_API_KEY: process.env.ABLY_API_KEY,
-      DATABASE_URL: process.env.DATABASE_URL
-
-    },
+  env: env
 };
 
 export default nextConfig;
