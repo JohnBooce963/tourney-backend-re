@@ -1,36 +1,11 @@
-import { lobbyService } from "@/service/lobby-service";
-import { withCors, corsOptionsResponse } from "@/libs/cor";
-import { publishLobbies } from "@/service/ably-ws-service";
+import { handle, readBody, text } from "@/libs/http";
+import { lobbies } from "@/service/lobby-service";
 
+export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
-  try {
-    const lobbies = lobbyService.getAllLobbies();
-    return withCors(req, lobbies, { status: 200 });
-  } catch (err) {
-    return withCors(req, { error: "Failed to fetch lobbies" }, { status: 500 });
-  }
-}
+export const GET = handle(() => lobbies.list());
 
-// POST /api/lobby - create a new lobby
-export async function POST(req: Request) {
-  try {
-    const { lobbyName, lobbyTheme } = await req.json();
-
-    if (!lobbyName || lobbyTheme === undefined) {
-      return withCors(req, { error: "Missing fields" }, { status: 400 });
-    }
-
-    const id = lobbyService.createLobby(lobbyName, lobbyTheme);
-    const lobby = lobbyService.getLobbyInfo(await id);
-
-    return withCors(req, lobby, { status: 200 });
-  } catch (err) {
-    return withCors(req, { error: "Internal Server Error" }, { status: 500 });
-  }
-}
-
-// OPTIONS /api/lobby - handle CORS preflight
-export async function OPTIONS(req: Request) {
-  return corsOptionsResponse(req);
-}
+export const POST = handle(async (req) => {
+  const b = await readBody(req);
+  return lobbies.create(text(b.name, "Lobby name", 40), Number(b.theme));
+});
