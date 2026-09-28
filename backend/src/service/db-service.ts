@@ -1,47 +1,49 @@
-import { operator } from "@/model/operator";
-import { Squad } from "@/model/squad";
 import { neon } from "@neondatabase/serverless";
+import { HttpError } from "@/libs/http";
 
-const sql = neon(`${process.env.DATABASE_URL}`)
+export type Operator = { id: string; name: string; cls: string; rarity: number };
+export type Squad = { id: string; name: string };
 
-export const dbService = new (class {
-    // async test() {
-    // const char_name_alt = 'Amiya'
-    // const res = await sql`SELECT char_img FROM operator WHERE char_name_alt = ${char_name_alt}` ;
+// Game data is static, so each query runs once per process and failures are retried next time.
+// ponytail: restart the server to pick up DB edits; add a TTL if the data starts changing often.
+const g = globalThis as unknown as { dbCache?: Map<string, Promise<unknown>> };
+const cache = (g.dbCache ??= new Map());
 
-    // if (res.length === 0 || !res[0].char_img) {
-    //     throw new Error("Image not found");
-    // }
+function once<T>(key: string, load: () => Promise<T>): Promise<T> {
+  if (!cache.has(key)) {
+    cache.set(key, load().catch((err) => {
+      cache.delete(key);
+      throw err;
+    }));
+  }
+  return cache.get(key) as Promise<T>;
+}
 
-    // const buffer = res[0].char_img; // res is already an array of rows
-    // return buffer;
-    // }
+const sql = () => neon(process.env.DATABASE_URL!);
 
-    async getOperatorList(){
-        const res = await sql`SELECT * FROM operator WHERE char_playable='1'`;
+export const db = {
+  operators: () =>
+    once("ops", async () =>
+      (await sql()`SELECT char_name, char_name_alt, char_class, char_rarity FROM operator
+                   WHERE char_playable = '1' ORDER BY char_name_alt`).map(
+        (r): Operator => ({ id: r.char_name, name: r.char_name_alt, cls: r.char_class, rarity: Number(r.char_rarity) }),
+      ),
+    ),
 
-        const opList: operator[] = res.map(row => ({
-            char_name: row.char_name,
-            char_alt_name: row.char_name_alt,
-            char_rarity: row.char_rarity,
-            char_class: row.char_class,
-            char_playable: row.char_playable,
-            char_img: `data:image/png;base64,${row.char_img.toString("base64")}`,
-        }));
+  squads: (theme: number) =>
+    once(`squads:${theme}`, async () =>
+      (await sql()`SELECT squad_id, squad_name FROM squad WHERE squad_theme = ${theme}`).map(
+        (r): Squad => ({ id: r.squad_id, name: r.squad_name }),
+      ),
+    ),
 
-        return opList
-    }
-
-    async getSpecificTheme(theme: number){
-        const res = await sql`SELECT * FROM squad WHERE squad_theme = ${theme}`;
-
-        const squad: Squad[] =  res.map(row => ({
-            squad_id: row.squad_id,
-            squad_name: row.squad_name,
-            squad_theme: row.squad_theme,
-            squad_img: `data:image/png;base64,${row.squad_img.toString("base64")}`,
-        }))
-
-        return squad
-    }
-})() 
+  image: (kind: string, id: string) =>
+    once(`img:${kind}:${id}`, async () => {
+      const rows =
+        kind === "op" ? await sql()`SELECT char_img AS img FROM operator WHERE char_name = ${id}`
+        : kind === "squad" ? await sql()`SELECT squad_img AS img FROM squad WHERE squad_id = ${id}`
+        : [];
+      if (!rows[0]?.img) throw new HttpError(404, "Image not found");
+      return rows[0].img as Uint8Array;
+    }),
+};

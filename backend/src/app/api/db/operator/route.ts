@@ -1,20 +1,8 @@
-import { dbService } from "@/service/db-service";
-import { corsOptionsResponse, withCors } from "@/libs/cor";
+import { handle } from "@/libs/http";
+import { db } from "@/service/db-service";
 
-export async function GET(req: Request) {
+export const dynamic = "force-dynamic";
 
-    try{
-        const resTheme = await dbService.getOperatorList();
-
-        return withCors(req, resTheme, { status : 200})
-    }
-    catch(err){
-        return withCors(req, { error: 'Internal Server Error'}, { status: 500})
-    }
-
-
-}
-
-export async function OPTIONS(req: Request) {
-  return corsOptionsResponse(req);
-}
+export const GET = handle(async () =>
+  Response.json(await db.operators(), { headers: { "Cache-Control": "public, max-age=3600" } }),
+);

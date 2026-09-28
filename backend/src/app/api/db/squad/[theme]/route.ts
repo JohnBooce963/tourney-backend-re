@@ -1,20 +1,8 @@
-import { corsOptionsResponse, withCors } from "@/libs/cor";
-import { dbService } from "@/service/db-service";
+import { handle, HttpError } from "@/libs/http";
+import { db } from "@/service/db-service";
 
-export async function GET(req: Request,  context: { params: Promise<{ theme: string  }> }) {
-    const { theme } = await context.params;
-
-    const themeId = Number(theme);
-
-    try{
-        const res = await dbService.getSpecificTheme(themeId);
-        return withCors(req, res, {status: 200})
-    }catch (err) {
-        return withCors(req, { error: "Failed to get lobby info" }, { status: 500 });
-    }
-    
-}
-
-export async function OPTIONS(req: Request) {
-  return corsOptionsResponse(req);
-}
+export const GET = handle(async (_req, { params }: { params: Promise<{ theme: string }> }) => {
+  const theme = Number((await params).theme);
+  if (!Number.isInteger(theme)) throw new HttpError(400, "Theme must be a number");
+  return Response.json(await db.squads(theme), { headers: { "Cache-Control": "public, max-age=3600" } });
+});

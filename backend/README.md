@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tourney backend
 
-## Getting Started
+JSON + Server-Sent Events API for the Tourney ban/pick draft (Next.js route handlers, Neon Postgres).
 
-First, run the development server:
+Lobby and draft state lives **in memory**, so run it as **one long-running Node process**
+(Railway, Render, Fly…). It does not work on serverless (Vercel/Netlify functions), and a restart clears open lobbies.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env   # then fill in DATABASE_URL
+npm install
+npm run dev            # http://localhost:3000
+npm test               # draft rules
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variable       | Required | Notes                                                    |
+| -------------- | -------- | -------------------------------------------------------- |
+| `DATABASE_URL` | yes      | Neon connection string                                   |
+| `CORS_ORIGIN`  | no       | Frontend origin, e.g. `https://tourney-frontend.vercel.app`. Defaults to `*` (safe: no cookies are used) |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Method | Path                               | Body                     | Notes                              |
+| ------ | ---------------------------------- | ------------------------ | ---------------------------------- |
+| GET    | `/api/lobby`                       |                          | lobby list                         |
+| POST   | `/api/lobby`                       | `{ name, theme }`        | → `{ id, ownerToken }`             |
+| GET    | `/api/lobby/events`                |                          | SSE: `lobbies`                     |
+| GET    | `/api/lobby/:id`                   |                          | lobby + draft snapshot             |
+| GET    | `/api/lobby/:id/events`            |                          | SSE: `state`, `coin`, `deleted`    |
+| POST   | `/api/lobby/:id/join`              | `{ name, slot }`         | → `{ slot, playerToken }`          |
+| POST   | `/api/lobby/:id/leave`             | `{ token }`              | player token                       |
+| POST   | `/api/lobby/:id/delete`            | `{ token }`              | owner token                        |
+| POST   | `/api/lobby/:id/flip`              | `{ token }`              | owner or player                    |
+| POST   | `/api/lobby/:id/start`             | `{ token }`              | owner or player, both seats filled |
+| POST   | `/api/lobby/:id/select`            | `{ token, item }`        | highlight (shown to everyone)      |
+| POST   | `/api/lobby/:id/confirm`           | `{ token, item }`        | lock in                            |
+| GET    | `/api/db/operator`                 |                          | operator list (no images)          |
+| GET    | `/api/db/squad/:theme`             |                          | squads for a theme                 |
+| GET    | `/api/img/op/:id`, `/api/img/squad/:id` |                     | PNG, cached for a year             |
 
-## Learn More
+Turns last 90 s; on timeout the highlighted choice (or a random valid one) is locked in.
+A finished draft stays viewable for 10 minutes (`closesAt` in the snapshot drives the on-screen countdown),
+then the lobby closes and everyone in it is sent back to the lobby list. The owner can close it earlier.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy (Railway)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. New Project → Deploy from GitHub → this repo. Settings → **Root Directory: `backend`**.
+2. Variables: `DATABASE_URL`, `CORS_ORIGIN`.
+3. Networking → Generate Domain. Put that URL in the frontend's `src/environments/environment.ts`.
+4. Keep replicas at **1** (state is in memory).

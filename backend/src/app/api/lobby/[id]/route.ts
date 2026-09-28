@@ -1,19 +1,4 @@
-import { lobbyService } from "@/service/lobby-service";
-import { withCors, corsOptionsResponse } from "@/libs/cor";
+import { handle } from "@/libs/http";
+import { lobbies } from "@/service/lobby-service";
 
-
-export async function GET(req: Request,  context: { params: Promise<{ id: string }> }) {
-    const { id } = await context.params;
-
-    try{
-        const res = lobbyService.getLobbyInfo(id);
-        return withCors(req, res, {status: 200})
-    }catch (err) {
-        return withCors(req, { error: "Failed to get lobby info" }, { status: 500 });
-    }
-    
-}
-
-export async function OPTIONS(req: Request) {
-  return corsOptionsResponse(req);
-}
+export const GET = handle(async (_req, { params }: { params: Promise<{ id: string }> }) => lobbies.view((await params).id));
